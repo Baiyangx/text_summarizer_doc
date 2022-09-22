@@ -123,3 +123,5 @@ results/
 *.fls
 .latexmk/
 .doccontents/
+
+*.pdf
