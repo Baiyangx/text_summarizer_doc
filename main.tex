@@ -37,15 +37,16 @@ Our goal of this project is to build a neural networks model to summarize any Am
 \indent To load the initial data preparation, we will use the data set from Kaggle - Amazon Fine Food Reviews for our data sets. For our neural network model, we will use Recurrent Neural Network to perform semantic analysis on our Amazon review training data set. For better learning performance, we will build our Recurrent Neural Network with Long-Short Term Memory to drop the unnecessary gradient as the training process goes on.
 
 \section{Related Work and Preliminary Results}
-content 
 \subsection{RNN}
 RNN (Recurrent Neural Network) is a network model that uses at least one feedback connection to build a sequenced learning process. The model can pass a sequential data stream as input, and for each learning state of single input, it can get experience feedback from the previous learning state to improve the current learning accuracy. The BRNN (Bi-directional Recurrent Neural Network) added a backward learning sequence to the RNN model so that the model can perform machine learning forward and backward to two separate recurrent nets ~\cite{vu2016bi}~\cite{schuster1997bidirectional}. 
 \subsection{LSTM}
 LSTM (Long-Short Term Memory) is an improvement of RNN in order to solve the gradient vanishing problem from traditional RNN. In a long-term learning process of RNN, the feedback for each state will gradually lose weight as learning goes on and have no influence at all in the end. Therefore, for each learning state, only a specific range of feedback can help the learning process. The LSTM model stores all necessary feedback filtered from all previous learning states by using logic gates that can memorize and forget ~\cite{hochreiter1997long}~\cite{gers2000learning}. Based on LSTM and RNN, there are many variant machine learning models were implemented such as BDLSTMs (Bidirectional Long-Short Term Memory) and Seq2Seq LSTM-RNN. 
 \subsection{Text summarizer}
-A text Summarizer is a tool to summarize long sentences or paragraphs by finding the subsets of data that can represent the information of the whole text set and present it in a concise manner to focus on the most important parts of the text~\cite{sinha2018extractive}. 
+A text Summarizer is a tool to summarize long sentences or paragraphs by finding the subsets of data that can represent the information of the whole text set and present it in a conci annotationse manner to focus on the most important parts of the text~\cite{sinha2018extractive}. 
 \subsection{Seq2Seq}
 Seq2Seq (Sequence-to-sequence) is a machine learning technique used for natural language processing. It creates 2 hidden layers called encoder and decoder to the network. The encoder processes the data into a LSTM model to transform it into a fixed-length vector representation, which will be used as the initial hidden state of the decoder which using another LSTM model to generate the output ~\cite{sutskever2014sequence}~\cite{vinyals2015show}. 
+\subsection{Bahdanau Attention}
+The concept of Bahdanau Attention was originally proposed by Dzmitry et al~\cite{bahdanau2014neural}. With the introduction of the RNNsearch(attention mechanism) into decoder, the performance of machine translation has been greatly improved. Regardless of the sentence length and that it is much more robust to the length of a source sentence. This technology is also good for improving the performance of text summarization. 
 
 \section{Research Plan}
 \begin{figure}[h]
