@@ -33,7 +33,8 @@ A Recurrent Neural Network (RNN) was introduced in 1986 to process sequential da
 \indent In general, when summarizing a paragraph or a sentence, the meaning of a word is related to the content that precedes and follows it. The Bidirectional RNN works well here, as it can access the inputs from past and future time steps. Additionally, an attention mechanism will be added to the encoding layer to determine which words in the sentence are the keywords before sending them to the decoding layer~\cite{vaswani2017attention}. As a result, it boosts the accuracy of the text summarizer.
 
 \section{Goals and Objectives}
-content
+Our goal of this project is to build a neural networks model to summarize any Amazon review on the fine foods product. Our trained model will take in any Amazon fine food review paragraph, and shorten it into a short sentence of summarize. Our review summarizer can help customers to make better decision on purchasing fine food products from Amazon without going through lengthy reviews. Potentially, we can further apply our model to other product categories.\\\\
+\indent To load the initial data preparation, we will use the data set from Kaggle - Amazon Fine Food Reviews for our data sets. For our neural network model, we will use Recurrent Neural Network to perform semantic analysis on our Amazon review training data set. For better learning performance, we will build our Recurrent Neural Network with Long-Short Term Memory to drop the unnecessary gradient as the training process goes on.
 
 \section{Related Work and Preliminary Results}
 content 
