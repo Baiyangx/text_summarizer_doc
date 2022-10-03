@@ -34,7 +34,7 @@ RNN was introduced in 1986 to process sequential data using feedback loops, and 
 
 \section{Goals and Objectives}
 Our goal of this project is to build a neural networks model to summarize any Amazon review on the fine foods product. Our trained model will take in any Amazon fine food review paragraph, and shorten it into a short sentence of summarize. Our review summarizer can help customers to make better decision on purchasing fine food products from Amazon without going through lengthy reviews. Potentially, we can further apply our model to other product categories.\\\\
-\indent To load the initial data preparation, we will use the data set from Kaggle - Amazon Fine Food Reviews for our data sets. For our neural network model, we will use RNN to perform semantic analysis on our Amazon review training data set. For better learning performance, we will build our RNN with LSTM to drop the unnecessary gradient as the training process goes on.
+\indent To load the initial data preparation, we will use the data set from Kaggle - Amazon Fine Food Reviews for our data sets. For our neural network model, we will use Bi-LSTM to perform semantic analysis on our Amazon review training data set. For better learning performance, we will build Seq2seq with Bahdanau Attention to better understand semantic information and output summaries of variable length.
 
 \section{Related Work and Preliminary Results}
 \subsection{RNN}
