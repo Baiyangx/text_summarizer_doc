@@ -55,10 +55,13 @@ The concept of Bahdanau Attention was originally proposed by Dzmitry et al~\cite
 \caption{System structure}
 \label{fig:System_Structure}
 \end{figure}
-\subsection{Preprocess}
-Our proposed method is to get the basic knowledge from Conceptnet-numberbatch first. Then we check the words in the datasets to generate a vocabulary and get the corresponding embedding by searching the numberbatch. In this way, we get to just initialize very few uncommon words and make the most use of prior knowledge. On the other hand, due to the dependence of RNN on sentence length. We filter some texts that are obviously too long or too short to improve the efficiency of subsequent training. 
-\subsection{Model}
-Text summarization task is a typical "many to many" task. It's hard to get a precise summary before you scan the entire review. Meanwhile, the reasonable output is usually of indeterminate length. Based on the characteristics of the text summarization task, we design a reasonable RNN structure that contains an encoding and decoding layer. For the encoding layer, we use Bidirectional RNN to scan the entire reviews from 2 directions, which enables the model to get more comprehensive information. With the LSTM components, full-text information is better concatenated. Those methods make the encoding layer produce more precise knowledge for the downstream tasks. For the decoding layer, We use attention mechanism to increase the weight of knowledge that has been determined to be important by the encoder. In order to output summary with reasonable length, we apply the dynamic decoder with Seq2seq to ensure the model can automatically adapt to different amounts of text content.
+
+\section{Methodology}
+\begin{flushleft}
+We implemented the following steps using PyTorch.
+\end{flushleft}
+\subsection{Data Preparation}
+This dataset consisted of more than 50,000 Amazon reviews of fine foods posted over a 10-year period from October 1999 to October 2012. It contains information about the product ID, user ID, profile name, helpfulness numerator, helpfulness denominator, review score, time, summary, and text. Here, “text” represents reviews that customers provided; for ease of understanding, we renamed “text” to “reviews.” Before cleaning the data, we loaded the dataset using pandas. For this project, we focused only on the summary and review columns, so the other columns were dropped, and null values were removed. We then replaced contractions with their full/longer forms using the list posted on [1]. We also converted every word of the summaries and descriptions to lowercase and removed any unwanted characters, such as the dash, hyphen, and @. We imported the Natural Language Toolkit (NLTK), which includes a list of 40 stop words, into our model. We only removed stop words from the reviews because they were not too important to the training process. By doing so, the size of the dataset was reduced, which sped up the training process. After cleaning the summaries and reviews, we used ConceptNet Numberbatch (CN) to map words to word embeddings. If certain words did not exist in CN, we assigned the words to UNK tokens. We decided to sort the reviews by length, which ensured that every batch was of a similar length, to reduce padding. To obtain more meaningful data, if the UNK tokens appeared more than once in the descriptions or more than 0 times in the summaries, the reviews were removed. At this point, we were ready to build a model.
 
 \section{Evaluation Plan}
 \subsection{Real datasets}
