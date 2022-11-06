@@ -70,7 +70,7 @@ Instead of training an entire dataset, which could be time consuming, we used a 
     \label{eqn1}
     L = - \dfrac{1}{N} \sum_{i = 1}^{N} y_i * log(p_i)
 \end{equation}    
-where $y_i$ is the target and $p_i$ is the prediction.
+where $y_i$ is the target and $p_i$ is the prediction. We only computed the loss using the non zero elements on the target and predictions so we removed the padded zeros from them. 
 For now, we set the number of epochs to 20, so the model will stop after running the entire training dataset 20 times.  \\ \\ 
 Moving forward, we will implement early stopping, which would stop the model if loss is not decreasing anymore and also prevent overfitting. Furthermore, we plan to create a profanity filter, apply an attention mechanism with LSTM to boost the accuracy of the model, and plot a graph to show the training and validation error.
 
