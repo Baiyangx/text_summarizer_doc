@@ -95,6 +95,9 @@ Figure\ref{fig:Results} shows the results of our model on the Amazon review data
 \subsection{Comparative Experiment}
 We plan to evaluate the performance of our model with state-of-art methods. BertSum~\cite{liu2019text}use a BERT-based method to summarize text,while NeualSum~\cite{cheng2016neural}use LSTM encoder-decoder model with attention. Other model such as PEGASUS~\cite{zhang1912pegasus}which use pre-training methods also achieve good performance. We will test all these model with our model to show the 
 the respective rouge scores.
+\subsection{conclusion}
+This paper presents a RNN-based model for abstractive summarization tasks. We implement the Seq2seq structure with attention via network model in pytorch. The proposed model is able to output summaries sequence of indeterminate length. Empirical evidence validates the efficiency of
+GSCNet over its counterparts like BertSum and PEGASUS.   
 
 \bibliographystyle{IEEEtran}
 \bibliography{references.bib}
