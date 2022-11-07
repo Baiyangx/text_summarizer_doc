@@ -1,3 +1,32 @@
+Skip to content
+Search or jump to…
+Pull requests
+Issues
+Marketplace
+Explore
+ 
+@awwle6107 
+Baiyangx
+/
+text_summarizer_doc
+Public
+Code
+Issues
+Pull requests
+Actions
+Projects
+Wiki
+Security
+Insights
+text_summarizer_doc/main.tex
+@Baiyangx
+Baiyangx update
+Latest commit bba1bda 2 hours ago
+ History
+ 3 contributors
+@shiwenwong99@Baiyangx@awwle6107
+102 lines (86 sloc)  16.7 KB
+
 \documentclass[conference]{IEEEtran}
 \IEEEoverridecommandlockouts
 % The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
@@ -7,6 +36,26 @@
 \usepackage{graphicx}
 \usepackage{textcomp}
 \usepackage{xcolor}
+\usepackage{listings}
+\usepackage{xcolor}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+\lstset{frame=tb,
+  language=Python,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
@@ -35,7 +84,26 @@ RNN was introduced in 1986 to process sequential data using feedback loops, and 
 \section{Goals and Objectives}
 Our goal of this project is to build a neural networks model to summarize any Amazon review on the fine foods product. Our trained model will take in any Amazon fine food review paragraph, and shorten it into a short sentence of summarize. Our review summarizer can help customers to make better decision on purchasing fine food products from Amazon without going through lengthy reviews. Potentially, we can further apply our model to other product categories.\\\\
 \indent To load the initial data preparation, we will use the data set from Kaggle - Amazon Fine Food Reviews for our data sets. For our neural network model, we will use Bi-LSTM to perform semantic analysis on our Amazon review training data set. For better learning performance, we will build Seq2seq with Bahdanau Attention to better understand semantic information and output summaries of variable length.
+\indent To clean our raw data set, we first selected the \texttt{Summary} and \texttt{Text} columns as $X_S$ and $X_T$ respectively. Then we clean our text by dropping the stopwords \{\texttt{"a", "an", "the", \ldots}\}.
 
+\indent Our text summarizer relies on word embedding. For the word emedding, we need to create a dictionary that cold the number of each vocabulary. The $word_counts$ is the dictionary that holds the number of each vocabulary, $text$ is all the text withing $X_S$ and $X_T$:
+\begin{lstlisting}
+for sentence in text:
+        for word in sentence.split():
+            if word not in word_counts:
+                word_counts[word] = 1
+            else:
+                word_counts[word] += 1
+\end{lstlisting}
+
+\indent After we created our vocabulary dictionary, we used \emph{Conceptnet Numberbatch's (CN) embeddings} to create a set or embedding weight $We$ for each word $W$:
+\begin{equation}
+    We = \sum_{i = 1}^{N} We_i
+\end{equation}
+\indent Lastly, we convert our text, $X_S$ and $X_T$ to integers $It$ with $word_count$ dictionary and the words $W$ that each word has its own embedded weight. $w()$ represent the function to extract the weight of each word.
+\begin{equation}
+    It_k = \sum_{k = 1}^{N}W_k \in W_S + W_k \in W_T
+\end{equation}
 \section{Related Work and Preliminary Results}
 \subsection{RNN}
 RNN is a network model that uses at least one feedback connection to build a sequenced learning process. The model can pass a sequential data stream as input, and for each learning state of single input, it can get experience feedback from the previous learning state to improve the current learning accuracy. The Bidirectional RNN added a backward learning sequence to the RNN model so that the model can perform machine learning forward and backward to two separate recurrent nets [3] [4]. The RNN provided mechanics to remember the historical information for each learning stage from its previous training, which is very helpful for the time series predictors. Nallapati et al [5] implemented an abstractive text summarization model using RNN. They used a bidirectional GRU-RNN as the encoder and a uni-directional GRU-RNN as the decoder with attention mechanisms to optimize the encoder and decoder. In recent research, traditional RNN has rarely been used due to its limitation: If the learning process is very long, the RNN will have a significant gradient vanishing problem which loses weight from the previous learning stage to update the current network. One of the solutions to the vanishing gradient problem is adding the LSTM technique to the RNN model. 
@@ -103,3 +171,18 @@ GSCNet over its counterparts like BertSum and PEGASUS.
 \bibliography{references.bib}
 \end{document}
 
+Footer
+© 2022 GitHub, Inc.
+Footer navigation
+Terms
+Privacy
+Security
+Status
+Docs
+Contact GitHub
+Pricing
+API
+Training
+Blog
+About
+Baiyangx/text_summarizer_doctext_summarizer_doc/main.tex at master · Baiyangx/text_summarizer_doc
