@@ -104,7 +104,7 @@ This dataset consists of more than 50,000 Amazon reviews of fine foods posted ov
 
 \subsection{Build a Model}
 \indent We used a seq2seq model with an encoder and decoder architecture. We want to train the model in batches, so we defined a function to create mini batches. Additionally, we padded zeros at the end of the sentence after the EOS token to ensure that the lengths are the same if sentences are shorter than the maximum length of a sentence within a mini batch. After these, the batch size was kept at 64. \\
-\indent GRU and LSTM are known as solutions to the vanishing gradient problem of RNN. For GRU, it consists of an update gate, $z_t$, and a reset gate, $r_t$, which helps the model determine how much past information it should pass along or forget. The hidden state takes information from the previous time steps’ outputs, inputs, and hidden states at each time step. Then, when we reach the last hidden state, it still contains vital information from before. The encoder will return a sequence of outputs for each sentence and the last hidden state. The last hidden state is also called the context vector. \\ The following is how hidden states, $h_t$, in GRU are calculated: 
+\indent GRU and LSTM are known as solutions to the vanishing gradient problem of RNN. GRU consists of an update gate, $z_t$, and a reset gate, $r_t$, which helps the model determine how much past information it should pass along or forget. The hidden state takes information from the previous time steps’ outputs, inputs, and hidden states at each time step. Then, when we reach the last hidden state, it still contains vital information from before. The encoder will return a sequence of outputs for each sentence and the last hidden state. The last hidden state is also called the context vector. The following is how hidden states, $h_t$, in GRU are calculated: 
 \begin{align}
 z_t &= \sigma(W_z \cdot [h_{t-1},x_t]) \\
 r_t &= \sigma(W_r \cdot [h_{t-1},x_t]) \\
@@ -112,20 +112,18 @@ r_t &= \sigma(W_r \cdot [h_{t-1},x_t]) \\
 h_t &=(1-z_t)*h_{t-1}+z_t*\Tilde{h}_t 
 \end{align}
 where $W_z, W_r, W$ are trainable parameters. \\
-For LSTM, it consists of a forget gate, outthe context vector is the last cell state, $c_t$ and hidden state, $h_t$. The formulas to compute the cell state and hidden state are as follows:
+\indent LSTM consists of a forget gate, $f_t$, an input gate, $i_t$, and an output gate, $o_t$. The context vector is the last cell state, $c_t$, and the last hidden state, $h_t$. The formulas to compute the cell state and hidden state are as follows:
 \begin{align}
-z_t &= \sigma(W_z \cdot [h_{t-1},x_t]) \\
-r_t &= \sigma(W_r \cdot [h_{t-1},x_t]) \\
-\Tilde{h}_t &= tanh(W\cdot [r_t*h_{t-1},x_t]) \\
-h_t &=(1-z_t)*h_{t-1}+z_t*\Tilde{h}_t 
+f_t &=\sigma(W_f\cdot [h_{t-1},x_t] +b_f) \\
+i_t &=\sigma(W_i\cdot [h_{t-1},x_t] +b_i) \\
+o_t &=\sigma(W_o\cdot [h_{t-1},x_t] +b_o) \\
+\Tilde{c}_t &= tanh(W_c \cdot [h_{t-1},x_t] +b_c) \\
+c_t &= f_t \cdot c_{t-1} + i_t*\Tilde{c}_t \\
+h_t &= o_t \cdot tanh(c_t) 
 \end{align}
-
-The encoder takes in vocab size, hidden size, and dropout rate as parameters. It takes the entire input sequence word by word for each sentence in a batch and then generates a sequence of outputs and hidden states using the Gated Recurrent Unit (GRU). T
-\indent The decoder also takes in the vocab size, hidden size, and dropout rate as parameters. The hidden size and dropout rate for the encoder and decoder are the same, which are 100 and 0.2, respectively. The context vector from the encoder which contains the encoder’s last hidden state and the previous decoder’s output is the input for the decoder. 
-
-
-
-\\The decoder produces the predicted summary word by word, and it will start after the GO token and stop when it reaches the EOS token. \\
+where $W_f, W_i, W_o, W_c, b_f, b_i, b_o, b_c$ are trainable parameters.
+\indent The encoder takes in vocab size, hidden size, and dropout rate as parameters. It takes the entire input sequence word by word for each sentence in a batch and then generates a sequence of outputs and a context vector. \\
+\indent The decoder also takes in the vocab size, hidden size, and dropout rate as parameters. The hidden size and dropout rate for the encoder and decoder are the same, which are 100 and 0.2, respectively. The context vector from the encoder is the input for the decoder. For GRU, the context vector is the last hidden state, while for LSTM, the context vector is the last cell state and hidden state. The decoder produces the predicted summary word by word, and it will start after the GO token and stop when it reaches the EOS token. \\
 \indent To optimize the model, we implemented the attention mechanism into the decoder. The attention mechanism can make the decoder focus on the selected info from the encoder’s output. Instead of using the last hidden state from the encoder, the attention decoder uses the encoder’s output and all of its hidden states to generate input with the previous decoder’s output. The attention decoder first, calculates the alignment score, then, SoftMax the alignment score and multiplies the result with the encoder’s output to get the context vector, then, concatenates the context vector with the previous decoder’s output to pass into the decoder as the input. Based on the methods to calculate, we made two different attention variants. \\
 \indent The first implemented attention mechanism was the Bahdanau attention. It calculates the alignment score by adding the decoder’s previous hidden state and the encoder’s hidden states, putting the sum into a Hyperbolic Tangent function as alignment weights (\ref{ba1}), multiplying it with a trainable vector, and SoftMax the result (\ref{ba2}).
 \begin{dmath}
@@ -310,7 +308,7 @@ This dataset consists of more than 50,000 Amazon reviews of fine foods posted ov
 
 \subsection{Build a Model}
 \indent We used a seq2seq model with an encoder and decoder architecture. We want to train the model in batches, so we defined a function to create mini batches. Additionally, we padded zeros at the end of the sentence after the EOS token to ensure that the lengths are the same if sentences are shorter than the maximum length of a sentence within a mini batch. After these, the batch size was kept at 64. \\
-\indent GRU and LSTM are known as solutions to the vanishing gradient problem of RNN. For GRU, it consists of an update gate, $z_t$, and a reset gate, $r_t$, which helps the model determine how much past information it should pass along or forget. The hidden state takes information from the previous time steps’ outputs, inputs, and hidden states at each time step. Then, when we reach the last hidden state, it still contains vital information from before. The encoder will return a sequence of outputs for each sentence and the last hidden state. The last hidden state is also called the context vector. \\ The following is how hidden states, $h_t$, in GRU are calculated: 
+\indent GRU and LSTM are known as solutions to the vanishing gradient problem of RNN. For GRU, it consists of an update gate, $z_t$, and a reset gate, $r_t$, which helps the model determine how much past information it should pass along or forget. The hidden state takes information from the previous time steps’ outputs, inputs, and hidden states at each time step. Then, when we reach the last hidden state, it still contains vital information from before. The encoder will return a sequence of outputs for each sentence and the last hidden state. The last hidden state is also called the context vector. The following is how hidden states, $h_t$, in GRU are calculated: 
 \begin{align}
 z_t &= \sigma(W_z \cdot [h_{t-1},x_t]) \\
 r_t &= \sigma(W_r \cdot [h_{t-1},x_t]) \\
@@ -318,7 +316,7 @@ r_t &= \sigma(W_r \cdot [h_{t-1},x_t]) \\
 h_t &=(1-z_t)*h_{t-1}+z_t*\Tilde{h}_t 
 \end{align}
 where $W_z, W_r, W$ are trainable parameters. \\
-For LSTM, it consists of a forget gate, outthe context vector is the last cell state, $c_t$ and hidden state, $h_t$. The formulas to compute the cell state and hidden state are as follows:
+LSTM consists of a forget gate, an input gate, and an output gate. The context vector is the last cell state, $c_t$, and the last hidden state, $h_t$. The formulas to compute the cell state and hidden state are as follows:
 \begin{align}
 z_t &= \sigma(W_z \cdot [h_{t-1},x_t]) \\
 r_t &= \sigma(W_r \cdot [h_{t-1},x_t]) \\
