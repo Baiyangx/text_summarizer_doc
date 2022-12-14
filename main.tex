@@ -107,12 +107,28 @@ This dataset consists of more than 50,000 Amazon reviews of fine foods posted ov
 
 
 \subsection{Train and Evaluate the Model}
-Instead of training an entire dataset, which could be time consuming, we use a subset between 20,000 to 25,000. Therefore, we train median sequence lengths. We also randomly split the dataset into training and validation sets, and there is no overlap between the two datasets. The training set is for training purposes, and the validation set is for detecting whether the model underfit or overfit. To prevent gradient explosion, which occurs when large error gradients accumulate, resulting in extremely large updates to weights during training, we apply gradient clipping by norm. More specifically, it rescales gradients so that their norm will not exceed the threshold of 5 (we choose this value). For the optimizer, we use Adam to update weights more efficiently with a default learning rate of 0.001. Additionally, Cross Entropy (\ref{eqn1}) is used to evaluate the performance of the model. 
+Instead of training an entire dataset, which could be time consuming, we used a subset between 20,000 to 25,000. We trained median sequence lengths, and randomly split the dataset into training and validation sets, and there is no overlap between the two datasets. The training set was used only for training purposes, and the validation set was used for detecting whether the model underfit or overfit. To prevent gradient explosion, which occurs when large error gradients accumulate, resulting in extremely large updates to weights during training, we applied gradient clipping by norm (\ref{eqn1}). By selecting a specific value as threshold, if the gradient gets too large, it will be clipped to keep it less than the threshold. More specifically, in this project, it rescales gradients so that their norm will not exceed the threshold of 5 (we choose this value).
 \begin{equation}
     \label{eqn1}
+    if \left\| g \right\|\gt v \text{ then } g \gets \frac{gv}{\left\| g \right\|}
+\end{equation}    
+
+For the optimizer, we used Adam to update weights more efficiently with a default learning rate of 0.001.
+The Adam optimizer is a combination of Momentum (\ref{eqn2}) and Root Mean Square Propagation (\ref{eqn3}) where $m_t$ and $m_t-1$ are aggregates of gradients at time t and t - 1, $v_t$ and $v_t-1$ are sum of square of past gradient at time t and t - 1, $\beta$ is moving average parameter, $\delta L$ is derivative of Loss function, $\delta L$ is derivative of weights at time t. It iteratively computes the bias-corrected estimates from those two gradient descent methods and uses these results to update the moving average parameters.
+\begin{equation}
+    \label{eqn2}
+    \mathrm{m}_{t}^{} = \beta\mathrm{m}_{t-1}^{} + (1-\beta)\left[ \frac{\delta L}{\delta \mathrm{w}_{t}^{}} \right]
+\end{equation}    
+\begin{equation}
+    \label{eqn3}
+    \mathrm{v}_{t}^{} = \beta\mathrm{v}_{t-1}^{} + (1-\beta)\left[ \frac{\delta L}{\delta \mathrm{w}_{t}^{}} \right]^2
+\end{equation}    
+ Additionally, Cross Entropy (\ref{eqn4}) was used to evaluate the performance of the model. 
+\begin{equation}
+    \label{eqn4}
     L = - \dfrac{1}{N} \sum_{i = 1}^{N} y_i * log(p_i)
 \end{equation}    
-where $y_i$ is the target and $p_i$ is the prediction. We only compute the loss using the non zero elements on the target and prediction so we remove the padded zeros from them. 
+where $y_i$ is the target and $p_i$ is the prediction. We only computed the loss using the non-zero elements on the target and prediction so we removed the padded zeros from them. 
 For now, we set the number of epochs to 20, so the model will stop after running the entire training dataset 20 times.  \\ \\ 
 \indent Moving forward, we will implement early stopping, which would stop the model if loss is not decreasing anymore and also prevent overfitting. Furthermore, we plan to create a profanity filter, apply an attention mechanism with LSTM to boost the accuracy of the model, and plot a graph to show the training and validation error.
 
