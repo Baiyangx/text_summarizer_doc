@@ -98,43 +98,50 @@ The Attention is one of the optimizations to Seq2Seq machine learning by making 
 \begin{flushleft} 
 We implemented the following steps using PyTorch.
 \end{flushleft}
-\subsection{Data Preparation}
+\subsection{Preprocess}
 This dataset consists of more than 50,000 Amazon reviews of fine foods posted over a 10-year period from October 1999 to October 2012. It contains information about the product ID, user ID, profile name, helpfulness numerator, helpfulness denominator, review score, time, summary, and text. Here, “text” represents reviews that customers provided; for ease of understanding, we rename “text” to “reviews.” \\
 \indent Before cleaning the data, we load the dataset using pandas. For this project, we focus only on the summary and review columns, so the other columns are being dropped, and null values are being removed. We then replace contractions with their full/longer forms using the list posted on~\cite{unknown1}. We also convert every word of the summaries and reviews to lowercase and remove any unwanted characters, such as the dash, hyphen, and @. We import the Natural Language Toolkit (NLTK), which includes a list of 40 stop words, into our model. We only remove stop words from the reviews because they are not too important to the training process. By doing so, the size of the dataset is reduced, which speeds up the training process. After cleaning the summaries and reviews, we use ConceptNet Numberbatch (CN) to map words to word embeddings. If certain words do not exist in CN, we assign the words to UNK tokens. Before sorting the reviews and summaries by length from shortest to longest, we add a GO token and an EOS token at the front and end of each sentence respectively. To obtain more meaningful data, if the UNK tokens appear more than once in the reviews or more than 0 times in the summaries, the reviews and summaries are being removed. At this point, we are ready to build a model.
 
 
 \subsection{Build a Model}
 \indent We used a seq2seq model with an encoder and decoder architecture. We want to train the model in batches, so we defined a function to create mini batches. Additionally, we padded zeros at the end of the sentence after the EOS token to ensure that the lengths are the same if sentences are shorter than the maximum length of a sentence within a mini batch. After these, the batch size was kept at 64. \\
+\indent GRU and LSTM are known as solutions to the vanishing gradient problem of RNN. For GRU, it consists of an update gate, $z_t$, and a reset gate, $r_t$, which helps the model determine how much past information it should pass along or forget. The hidden state takes information from the previous time steps’ outputs, inputs, and hidden states at each time step. Then, when we reach the last hidden state, it still contains vital information from before. The encoder will return a sequence of outputs for each sentence and the last hidden state. The last hidden state is also called the context vector. The following is how hidden states, $h_t$, in GRU are calculated: 
+\begin{align}
+z_t &= \sigma(W_z \cdot [h_{t-1},x_t]) \\
+r_t &= \sigma(W_r \cdot [h_{t-1},x_t]) \\
+\Tilde{h}_t &= tanh(W\cdot [r_t*h_{t-1},x_t]) \\
+h_t &=(1-z_t)*h_{t-1}+z_t*\Tilde{h}_t 
+\end{align}
+where $W_z, W_r, W$ are trainable parameters. \\
+LSTM consists of a forget gate, an input gate, and an output gate. The context vector is the last cell state, $c_t$, and the last hidden state, $h_t$. The formulas to compute the cell state and hidden state are as follows:
+\begin{align}
+z_t &= \sigma(W_z \cdot [h_{t-1},x_t]) \\
+r_t &= \sigma(W_r \cdot [h_{t-1},x_t]) \\
+\Tilde{h}_t &= tanh(W\cdot [r_t*h_{t-1},x_t]) \\
+h_t &=(1-z_t)*h_{t-1}+z_t*\Tilde{h}_t 
+\end{align}
 
-\indent The encoder takes in vocab size, hidden size, and dropout rate as parameters. It takes the entire input sequence word by word for each sentence in a batch and then generates a sequence of outputs and hidden states using the Gated Recurrent Unit (GRU). The GRU is also known as a method to solve the vanishing gradient problem of RNN. It consists of an update gate and a reset gate, which helps the model determine how much past information it should pass along or forget. The hidden state takes information from the previous time steps’ outputs, inputs, and hidden states at each time step. Then, when we reach the last hidden state, it still contains vital information from before. The encoder will return a sequence of outputs for each sentence and the last hidden state. The last hidden state is also called the context vector. \\
-\indent The decoder also takes in the vocab size, hidden size, and dropout rate as parameters. The hidden size and dropout rate for the encoder and decoder are the same, which are 100 and 0.2, respectively. The context vector from the encoder which contains the encoder’s last hidden state and the previous decoder’s output is the input for the decoder. The decoder produces the predicted summary word by word, and it will start after the GO token and stop when it reaches the EOS token. The decoder also returns all the hidden states for each sequence. \\
+The encoder takes in vocab size, hidden size, and dropout rate as parameters. It takes the entire input sequence word by word for each sentence in a batch and then generates a sequence of outputs and hidden states using the Gated Recurrent Unit (GRU). T
+\indent The decoder also takes in the vocab size, hidden size, and dropout rate as parameters. The hidden size and dropout rate for the encoder and decoder are the same, which are 100 and 0.2, respectively. The context vector from the encoder which contains the encoder’s last hidden state and the previous decoder’s output is the input for the decoder. 
+
+
+
+\\The decoder produces the predicted summary word by word, and it will start after the GO token and stop when it reaches the EOS token. \\
 \indent To optimize the model, we implemented the attention mechanism into the decoder. The attention mechanism can make the decoder focus on the selected info from the encoder’s output. Instead of using the last hidden state from the encoder, the attention decoder uses the encoder’s output and all of its hidden states to generate input with the previous decoder’s output. The attention decoder first, calculates the alignment score, then, SoftMax the alignment score and multiplies the result with the encoder’s output to get the context vector, then, concatenates the context vector with the previous decoder’s output to pass into the decoder as the input. Based on the methods to calculate, we made two different attention variants. \\
 \indent The first implemented attention mechanism was the Bahdanau attention. It calculates the alignment score by adding the decoder’s previous hidden state and the encoder’s hidden states, putting the sum into a Hyperbolic Tangent function as alignment weights (\ref{ba1}), multiplying it with a trainable vector, and SoftMax the result (\ref{ba2}).
 \begin{dmath}
-    \label{ba1}  
-\text{Alignment Weights} = tanh(W_{Decoder} \cdot H_{Decoder} + W_{Encoder} \cdot H_{Encoder})
-\end{dmath} 
- Then, the decoder multiplies the alignment score with the encoder’s output to generate the context vector (\ref{ba3}), concatenates the context vector with the previous decoder’s hidden state, and feeds them into the decoder as input.
-
+    \label{ba1}
+    \text{Alignment Weights} = tanh(W_{Decoder} \cdot H_{Decoder} + W_{Encoder} \cdot H_{Encoder})
+\end{dmath}  
 \begin{equation}
+    \label{ba2}
+\text{Alignment Score} = Softmax(\mathrm{V}_{}^{T} \cdot \text{Alignment Weights})
+\end{equation}  
+ Then, the decoder multiplies the alignment score with the encoder’s output to generate the context vector (\ref{ba3}), concatenates the context vector with the previous decoder’s hidden state, and feeds them into the decoder as input.
+\begin{dmath}
     \label{ba3}
 \text{Context Vector} = \text{Encoder Output} \cdot \text{Alignment Score}
-\end{equation}  
-\\
-\indent The second implemented attention mechanism was the Luong attention. This mechanism was developed from Bahdanau attention. It calculates the alignment score by using the current decoder’s hidden state instead of the previous decoder’s hidden state. Therefore, the attention is introduced after getting the current decoder’s hidden state by using the previous decoder’s hidden state and the encoder’s output. The Luong attention first, calculates the alignment score by multiplying the current decoder’s hidden state with the encoder’s hidden states (\ref{la1}),
-\begin{equation}
-    \label{la1}
-    \text{Alignment Score} = \mathrm{H}_{encoder}^{} \cdot \mathrm{H}_{decoder}^{}
-\end{equation}  
-then multiplies the encoder's output with softmaxed alignment score to generate the context vector (\ref{la2}), concatenates it with the current decoder’s hidden state, and passes them into the next decoder.
-\begin{equation}
-    \label{la2}
-    \text{Context Vector} = \mathrm{Output}_{\text{Encoder}}^{} \cdot softmax(\text{Alignment Score})
-\end{equation}  
-\\
-\indent For the final part, we build the seq2seq model. It takes in an encoder and attention decoder. It will produce a final prediction for each batch, and we use that prediction to compute the loss when starting training. 
-
-
+\end{dmath}  
 
 \indent The second implemented attention mechanism was the Luong attention. This mechanism was developed from Bahdanau attention. It calculates the alignment score by using the current decoder’s hidden state instead of the previous decoder’s hidden state. Therefore, the attention is introduced after getting the current decoder’s hidden state by using the previous decoder’s hidden state and the encoder’s output. The Luong attention first, calculates the alignment score by multiplying the current decoder’s hidden state with the encoder’s hidden states (\ref{la1}),
 \begin{equation}
@@ -148,8 +155,6 @@ then multiplies the encoder's output with softmaxed alignment score to generate 
 \end{equation}  
 \\
 \indent For the final part, we build the seq2seq model. It takes in an encoder and attention decoder. It will produce a final prediction for each batch, and we use that prediction to compute the loss when starting training. 
-
-
 
 \subsection{Train and Evaluate the Model}
 Instead of training an entire dataset, which could be time consuming, we used a subset between 20,000 to 25,000. We trained median sequence lengths, and randomly split the dataset into training and validation sets, and there is no overlap between the two datasets. The training set was used only for training purposes, and the validation set was used for detecting whether the model underfit or overfit. To prevent gradient explosion, which occurs when large error gradients accumulate, resulting in extremely large updates to weights during training, we applied gradient clipping by norm (\ref{eqn1}). By selecting a specific value as threshold, if the gradient gets too large, it will be clipped to keep it less than the threshold. More specifically, in this project, it rescales gradients so that their norm will not exceed the threshold of 5 (we choose this value).
@@ -158,7 +163,6 @@ Instead of training an entire dataset, which could be time consuming, we used a 
     if \left\| g \right\| \ge v \text{ then } g \gets \frac{g}{\left\| g \right\|}*v
 \end{equation}    
 where v is the threshold. \\
-
 For the optimizer, we used Adam to update weights more efficiently with a default learning rate of 0.001.
 The Adam optimizer is a combination of Momentum (\ref{eqn2}) and Root Mean Square Propagation (\ref{eqn3}) where $m_t$ and $m_t-1$ are aggregates of gradients at time t and t - 1, $v_t$ and $v_t-1$ are sum of square of past gradient at time t and t - 1, $\beta$ is moving average parameter, $\delta L$ is derivative of Loss function, $\delta L$ is derivative of weights at time t. It iteratively computes the bias-corrected estimates from those two gradient descent methods and uses these results to update the moving average parameters.
 \begin{equation}
@@ -175,53 +179,13 @@ The Adam optimizer is a combination of Momentum (\ref{eqn2}) and Root Mean Squar
     L = - \dfrac{1}{N} \sum_{i = 1}^{N} y_i * log(p_i)
 \end{equation}    
 where $y_i$ is the target and $p_i$ is the prediction. We only computed the loss using the non-zero elements on the target and prediction so we removed the padded zeros from them. 
-
-For now, we set the number of epochs to 20, so the model will stop after running the entire training dataset 20 times.  \\ \\ 
-\indent Moving forward, we will implement early stopping, which would stop the model if loss is not decreasing anymore and also prevent overfitting. Furthermore, we plan to create a profanity filter, apply an attention mechanism with LSTM to boost the accuracy of the model, and plot a graph to show the training and validation error.
-
-
-\subsection{Calculation of LSTM}
-\indent GRU and LSTM are known as solutions to the vanishing gradient problem of RNN. GRU consists of an update gate, $z_t$, and a reset gate, $r_t$, which helps the model determine how much past information it should pass along or forget. The hidden state takes information from the previous time steps’ outputs, inputs, and hidden states at each time step. Then, when we reach the last hidden state, it still contains vital information from before. The encoder will return a sequence of outputs for each sentence and the last hidden state. The last hidden state is also called the context vector. The following is how hidden states, $h_t$, in GRU are calculated: 
-\begin{align}
-z_t &= \sigma(W_z \cdot [h_{t-1},x_t]) \\
-r_t &= \sigma(W_r \cdot [h_{t-1},x_t]) \\
-\Tilde{h}_t &= tanh(W\cdot [r_t*h_{t-1},x_t]) \\
-h_t &=(1-z_t)*h_{t-1}+z_t*\Tilde{h}_t 
-\end{align}
-where $W_z, W_r, W$ are trainable parameters. \\
-\indent LSTM consists of a forget gate, $f_t$, an input gate, $i_t$, and an output gate, $o_t$. The context vector is the last cell state, $c_t$, and the last hidden state, $h_t$. The formulas to compute the cell state and hidden state are as follows:
-\begin{align}
-f_t &=\sigma(W_f\cdot [h_{t-1},x_t] +b_f) \\
-i_t &=\sigma(W_i\cdot [h_{t-1},x_t] +b_i) \\
-o_t &=\sigma(W_o\cdot [h_{t-1},x_t] +b_o) \\
-\Tilde{c}_t &= tanh(W_c \cdot [h_{t-1},x_t] +b_c) \\
-c_t &= f_t \cdot c_{t-1} + i_t*\Tilde{c}_t \\
-h_t &= o_t \cdot tanh(c_t) 
-\end{align}
-where $W_f, W_i, W_o, W_c, b_f, b_i, b_o, b_c$ are trainable parameters.
-\indent The encoder takes in vocab size, hidden size, and dropout rate as parameters. It takes the entire input sequence word by word for each sentence in a batch and then generates a sequence of outputs and a context vector. \\
-\indent The decoder also takes in the vocab size, hidden size, and dropout rate as parameters. The hidden size and dropout rate for the encoder and decoder are the same, which are 100 and 0.2, respectively. The context vector from the encoder is the input for the decoder. For GRU, the context vector is the last hidden state, while for LSTM, the context vector is the last cell state and hidden state. \\
-\indent After training, the decoder produces the predicted summary word by word, and it will start after the GO token and stop when it reaches the EOS token. The input sequence first gets pass to the encoder to get a context vector. Then, we initialize the decoder with the context vector of the encoder and pass the GO token as an input to the decoder. After a time step, the output of the decoder is the probability of the next word and then the word with the highest probability will be selected. We then proceed to pass the word as an input in the next time step and update the hidden state and cell state (if we are using LSTM). We repeat this process until we reach the END token. The output of the decoder is the summary. \\
-\indent To optimize the model, we implemented the attention mechanism into the decoder. The attention mechanism can make the decoder focus on the selected info from the encoder’s output. Instead of using the last hidden state from the encoder, the attention decoder uses the encoder’s output and all of its hidden states to generate input with the previous decoder’s output. The attention decoder first, calculates the alignment score, then, SoftMax the alignment score and multiplies the result with the encoder’s output to get the context vector, then, concatenates the context vector with the previous decoder’s output to pass into the decoder as the input. Based on the methods to calculate, we made two different attention variants. \\
-\indent The first implemented attention mechanism was the Bahdanau attention. It calculates the alignment score by adding the decoder’s previous hidden state and the encoder’s hidden states, putting the sum into a Hyperbolic Tangent function as alignment weights (\ref{ba1}), multiplying it with a trainable vector, and SoftMax the result (\ref{ba2}).
-\begin{dmath}
-    \label{ba1}
-    \text{Alignment Weights} = tanh(W_{Decoder} \cdot H_{Decoder} + W_{Encoder} \cdot H_{Encoder})
-\end{dmath}  
-
-\begin{equation}
-    \label{ba2}
-\text{Alignment Score} = Softmax(\mathrm{V}_{}^{T} \cdot \text{Alignment Weights})
-\end{equation} 
-
-For now, we set the number of epochs to 20, so the model will stop after running the entire training dataset 20 times.  \\ 
-
+For now, we set the number of epochs to 20, so the model will stop after running the entire training dataset 20 times.  
 
 \section{Experiment}
 \subsection{Real datasets}
 The dataset we use is Amazon Fine Food Reviews which contains more than 500000 records, spanning a period of more than 10 years. This dataset also provides summaries labeled by humans so that we can train our model to learn this ability to generalize. 
 \subsection{Evaluation Measurement}
-we will use both metric-based and human-subject evaluations to evaluate our model. Since we get the original summaries in the datasets, we can subjectively judge whether machine-generated generalization results outperform humans.  Besides, the performance of various text summarization methods is reported on shared DUC datasets using an automatic evaluation framework, ROUGE~\cite{lin-2004-rouge},which is DUC’s official evaluation metric for text summarization. Our experiments are based on the calculation of ROUGE sore in mutiple dataset.
+We will use both metric-based and human-subject evaluations to evaluate our model. Since we get the original summaries in the datasets, we can subjectively judge whether machine-generated generalization results outperform humans.  Besides, the performance of various text summarization methods is reported on shared DUC datasets using an automatic evaluation framework, ROUGE~\cite{lin-2004-rouge},which is DUC’s official evaluation metric for text summarization. Our experiments are based on the calculation of ROUGE sore in mutiple dataset.
 
 \begin{figure}[h]
 \centering
@@ -230,7 +194,7 @@ we will use both metric-based and human-subject evaluations to evaluate our mode
 \label{fig:Results}
 \end{figure}
 The ROUGE score has many metrics, The ROUGE-1, ROUGE-2, ROUGE-l are the most widely used. ROUGE-1 Precision and Recall compare the similarity of uni-grams between reference and candidate summaries.ROUGE-2 Precision and Recall compare the similarity of bi-grams between reference and candidate summaries. By bi-grams, we mean each token of comparison is 2 consecutive words from the reference and candidate summaries. ROUGE-L Precision and Recall measures the Longest Common Subsequence (LCS) words between reference and candidate summaries. By LCS, we refer to word tokens that are in sequence, but not necessarily consecutive. \\
-Figure\ref{fig:Results} shows the results of our model on the Amazon review datasets. We apply rouge evaluation framework on it. First, we import python package ROUGE to our project, then convert the result format. The framework will get the average of scores for each pair of sentence. In this way, we get to do quantitative analysis of the performance of text summarization models.\\
+Figure\ref{fig:Results} shows the results of our model on the Amazon review datasets. We apply rouge evaluation framework on it. First, we import python package ROUGE to our project, then convert the result format. The framework will get the average of scores for each pair of sentence. In this way, we get to do quantitative analysis of the performance of text summarization models.
 \subsection{Comparative Experiment}
 \begin{table}
 \centering
@@ -246,7 +210,7 @@ Figure\ref{fig:Results} shows the results of our model on the Amazon review data
 \end{tabular}
 \end{table}
 We design comparative experiment on 4 different methods, and record the averge ROUGE score on the test dataset. The consequence is listed in Table~\ref{tab:Results}. Experiment result shows the method GRU+Luong Attention+Pre-trained embedding achieve the best performance with the highest F1 score 0.274. Although the score is not high, it shows that this model has the ability to supplement the key information of the text. 
-\subsection{conclusion}
+\subsection{Conclusion}
 This paper presents a RNN-based model for abstractive summarization tasks. We implement the Seq2seq structure with attention via network model in pytorch. The proposed model is able to output summaries sequence of indeterminate length. We design comparative experiment and the result suggest that GRU+Luong Attention+Pre-trained embedding is our proposed method on this Food review summarization task. 
 
 \bibliographystyle{IEEEtran}
