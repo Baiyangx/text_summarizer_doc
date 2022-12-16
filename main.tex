@@ -35,15 +35,15 @@
 \begin{document}
 
 \title{\textbf{Text Summarizer for Amazon Food Reviews}\\}
-\author{\textbf{\Large{Yangxiao Bai, Chen-Wei Hung, XiaoZhu Jin, Shi Wen Wong}} \\
+\author{\textbf{\Large{Yangxiao Bai, XiaoZhu Jin, Shi Wen Wong, Chen-Wei Hung}} \\
 South Dakota State University \\
-\{bai.yangxiao, chenwei.hung, xiaozhu.jin, shiwen.wong\}@jacks.sdstate.edu \\
+\{bai.yangxiao,  xiaozhu.jin, shiwen.wong, chenwei.hung\}@jacks.sdstate.edu \\
 }
 
 \maketitle
 
 \begin{abstract}
-Online shopping has become a mainstream method of making purchases due to its convenience and efficiency. Reviews play a significant role in assisting shoppers to make purchasing decisions and benefit entrepreneurs by building trust, setting their brand apart from others, and allowing them to make improvements based on the reviews. This project focuses on building a text summarizer for Amazon reviews of fine foods by using Seq2Seq model with an attention mechanism. The goal of this work is to shorten the length of reviews and eliminate irrelevant information while preserving the original context and tone, and ultimately, to save buyers’ time and allow informed purchasing decisions in a timely manner. 
+Online shopping has become a mainstream method of making purchases due to its convenience and efficiency. Reviews play a significant role in assisting shoppers to make purchasing decisions and benefit entrepreneurs by building trust, setting their brand apart from others, and allowing them to make improvements based on the reviews. This project focuses on building a text summarizer for Amazon reviews of fine foods by using the Seq2Seq model with an attention mechanism. The goal of this work is to shorten the length of reviews and eliminate irrelevant information while preserving the original context and tone, and ultimately, to save buyers’ time and allow informed purchasing decisions in a timely manner. 
 \end{abstract} 
 
 \begin{IEEEkeywords}
@@ -51,13 +51,13 @@ Text Summarizer, Seq2Seq, Attention Mechanism, Long-Short Term Memory, Gated Rec
 \end{IEEEkeywords}
 
 \section{Introduction}
-RNN was introduced in 1986 to process sequential data using feedback loops, and it is commonly used for Natural Language Processing related tasks such as language translation, speech recognition, text prediction, and video captioning~\cite{staudemeyer2019understanding}. One drawback RNN experiences is that gradients vanish during backward propagation resulting in the model stopping to learn. In 1997, Long Short-Term Memory (LSTM) was designed by Sepp Hochreiter and J\"{u}rgen Schmidhuber to overcome the gradient-vanishing problem. Furthermore, unlike the traditional RNN, LSTM is capable of learning long-term dependencies effectively through several gates that control what pieces of information should be passed along or discarded. \\ \\
+RNN was introduced in 1986 to process sequential data using feedback loops, and it is commonly used for Natural Language Processing related tasks such as language translation, speech recognition, text prediction, and video captioning~\cite{staudemeyer2019understanding}. One drawback of RNN experiences is that gradients vanish during backward propagation resulting in the model stopping to learn. In 1997, Long Short-Term Memory (LSTM) was designed by Sepp Hochreiter and J\"{u}rgen Schmidhuber to overcome the gradient-vanishing problem. Furthermore, unlike the traditional RNN, LSTM is capable of learning long-term dependencies effectively through several gates that control what pieces of information should be passed along or discarded. \\ \\
 \indent In general, when summarizing a paragraph or a sentence, the meaning of a word is related to the content that precedes and follows it. The Bidirectional RNN works well here, as it can access the inputs from past and future time steps. Additionally, an attention mechanism will be added to the decoding layer to boost the performance of the text summarizer~\cite{vaswani2017attention}. 
 
 \section{Goals and Objectives}
-Our goal of this project is to build a neural networks model to summarize any Amazon review on the fine foods product. Our trained model will take in any Amazon fine food review paragraph, and shorten it into a short sentence of summarize. Our review summarizer can help customers to make better decision on purchasing fine food products from Amazon without going through lengthy reviews. Potentially, we can further apply our model to other product categories.\\\\
-\indent To load the initial data preparation, we will use the data set from Kaggle - Amazon Fine Food Reviews for our data sets. For our neural network model, we will use Bi-LSTM to perform semantic analysis on our Amazon review training data set. For better learning performance, we will build Seq2seq with Bahdanau Attention to better understand semantic information and output summaries of variable length.
-\indent To clean our raw data set, we first selected the \texttt{Summary} and \texttt{Text} columns as $X_S$ and $X_T$ respectively. Then we clean our text by dropping the stopwords \{\texttt{"a", "an", "the", \ldots}\}.
+Our goal for this project is to build a neural network model to summarize any Amazon review on the fine foods product. Our trained model will take in any Amazon fine food review paragraph and shorten it into a short sentence of the summary. Our review summarizer can help customers to make a better decision on purchasing fine food products from Amazon without going through lengthy reviews. Potentially, we can further apply our model to other product categories.\\\\
+\indent To load the initial data preparation, we used the data set from Kaggle - Amazon Fine Food Reviews for our data sets. For our neural network model, we used Bi-LSTM to perform semantic analysis on our Amazon review training data set. For better learning performance, we built Seq2seq with Bahdanau Attention to better understand semantic information and output summaries of variable length.
+\indent To clean our raw data set, we first selected the \texttt{Summary} and \texttt{Text} columns as $X_S$ and $X_T$ respectively. Then we cleaned our text by dropping the stopwords \{\texttt{"a", "an", "the", \ldots}\}.
 
 \indent Our text summarizer relies on word embedding. For the word emedding, we need to create a dictionary that cold the number of each vocabulary. The $word_counts$ is the dictionary that holds the number of each vocabulary, $text$ is all the text withing $X_S$ and $X_T$:
 \begin{lstlisting}
@@ -73,7 +73,7 @@ for sentence in text:
 \begin{equation}
     We = \sum_{i = 1}^{N} We_i
 \end{equation}
-\indent Lastly, we convert our text, $X_S$ and $X_T$ to integers $It$ with $word_count$ dictionary and the words $W$ that each word has its own embedded weight. $w()$ represent the function to extract the weight of each word.
+\indent Lastly, we converted our text, $X_S$ and $X_T$ to integers $It$ with $word_count$ dictionary and the words $W$ that each word has its own embedded weight. $w()$ represents the function to extract the weight of each word.
 \begin{equation}
     It_k = \sum_{k = 1}^{N}W_k \in W_S + W_k \in W_T
 \end{equation}
@@ -100,11 +100,11 @@ We implemented the following steps using PyTorch.
 \end{flushleft}
 \subsection{Preprocess}
 This dataset consists of more than 50,000 Amazon reviews of fine foods posted over a 10-year period from October 1999 to October 2012. It contains information about the product ID, user ID, profile name, helpfulness numerator, helpfulness denominator, review score, time, summary, and text. Here, “text” represents reviews that customers provided; for ease of understanding, we rename “text” to “reviews.” \\
-\indent Before cleaning the data, we load the dataset using pandas. For this project, we focus only on the summary and review columns, so the other columns are being dropped, and null values are being removed. We then replace contractions with their full/longer forms using the list posted on~\cite{unknown1}. We also convert every word of the summaries and reviews to lowercase and remove any unwanted characters, such as the dash, hyphen, and @. We import the Natural Language Toolkit (NLTK), which includes a list of 40 stop words, into our model. We only remove stop words from the reviews because they are not too important to the training process. By doing so, the size of the dataset is reduced, which speeds up the training process. After cleaning the summaries and reviews, we use ConceptNet Numberbatch (CN) to map words to word embeddings. If certain words do not exist in CN, we assign the words to UNK tokens. Before sorting the reviews and summaries by length from shortest to longest, we add a GO token and an EOS token at the front and end of each sentence respectively. To obtain more meaningful data, if the UNK tokens appear more than once in the reviews or more than 0 times in the summaries, the reviews and summaries are being removed. At this point, we are ready to build a model.
+\indent Before cleaning the data, we loaded the dataset using pandas. For this project, we only focus on the summary and review columns, so the other columns were dropped, and null values were removed. We then replaced contractions with their full/longer forms using the list posted on~\cite{unknown1}. We also converted every word of the summaries and reviews to lowercase and removed any unwanted characters, such as the dash, hyphen, and @. We imported the Natural Language Toolkit (NLTK), which includes a list of 40 stop words, into our model. We only removed stop words from the reviews because they are not too important to the training process. By doing so, the size of the dataset was reduced, which speeded up the training process. After cleaning the summaries and reviews, we used ConceptNet Numberbatch (CN) to map words to word embeddings. If certain words did not exist in CN, we would assign the words to UNK tokens. Before sorting the reviews and summaries by length from shortest to longest, we added a GO token and an EOS token at the front and end of each sentence respectively. To obtain more meaningful data, if the UNK tokens appeared more than once in the reviews or more than 0 times in the summaries, the reviews and summaries would be removed. At this point, we were ready to build a model.
 
 
 \subsection{Build a Model}
-\indent We used a seq2seq model with an encoder and decoder architecture. We want to train the model in batches, so we defined a function to create mini batches. Additionally, we padded zeros at the end of the sentence after the EOS token to ensure that the lengths are the same if sentences are shorter than the maximum length of a sentence within a mini batch. After these, the batch size was kept at 64. \\
+\indent We used a seq2seq model with an encoder and decoder architecture. We wanted to train the model in batches, so we defined a function to create mini batches. Additionally, we padded zeros at the end of the sentence after the EOS token to ensure that the lengths are the same if sentences are shorter than the maximum length of a sentence within a mini batch. After these, the batch size was kept at 64. \\
 \indent GRU and LSTM are known as solutions to the vanishing gradient problem of RNN. For GRU, it consists of an update gate, $z_t$, and a reset gate, $r_t$, which helps the model determine how much past information it should pass along or forget. The hidden state takes information from the previous time steps’ outputs, inputs, and hidden states at each time step. Then, when we reach the last hidden state, it still contains vital information from before. The encoder will return a sequence of outputs for each sentence and the last hidden state. The last hidden state is also called the context vector. The following is how hidden states, $h_t$, in GRU are calculated: 
 \begin{align}
 z_t &= \sigma(W_z \cdot [h_{t-1},x_t]) \\
@@ -126,7 +126,7 @@ The encoder takes in vocab size, hidden size, and dropout rate as parameters. It
 
 
 
-\\The decoder produces the predicted summary word by word, and it will start after the GO token and stop when it reaches the EOS token. \\
+The decoder produces the predicted summary word by word, and it will start after the GO token and stop when it reaches the EOS token. \\
 \indent To optimize the model, we implemented the attention mechanism into the decoder. The attention mechanism can make the decoder focus on the selected info from the encoder’s output. Instead of using the last hidden state from the encoder, the attention decoder uses the encoder’s output and all of its hidden states to generate input with the previous decoder’s output. The attention decoder first, calculates the alignment score, then, SoftMax the alignment score and multiplies the result with the encoder’s output to get the context vector, then, concatenates the context vector with the previous decoder’s output to pass into the decoder as the input. Based on the methods to calculate, we made two different attention variants. \\
 \indent The first implemented attention mechanism was the Bahdanau attention. It calculates the alignment score by adding the decoder’s previous hidden state and the encoder’s hidden states, putting the sum into a Hyperbolic Tangent function as alignment weights (\ref{ba1}), multiplying it with a trainable vector, and SoftMax the result (\ref{ba2}).
 \begin{dmath}
@@ -183,9 +183,9 @@ For now, we set the number of epochs to 20, so the model will stop after running
 
 \section{Experiment}
 \subsection{Real datasets}
-The dataset we use is Amazon Fine Food Reviews which contains more than 500000 records, spanning a period of more than 10 years. This dataset also provides summaries labeled by humans so that we can train our model to learn this ability to generalize. 
+The dataset we used is Amazon Fine Food Reviews which contains more than 500000 records, spanning a period of more than 10 years. This dataset also provides summaries labeled by humans so that we can train our model to learn this ability to generalize. 
 \subsection{Evaluation Measurement}
-We will use both metric-based and human-subject evaluations to evaluate our model. Since we get the original summaries in the datasets, we can subjectively judge whether machine-generated generalization results outperform humans.  Besides, the performance of various text summarization methods is reported on shared DUC datasets using an automatic evaluation framework, ROUGE~\cite{lin-2004-rouge},which is DUC’s official evaluation metric for text summarization. Our experiments are based on the calculation of ROUGE sore in mutiple dataset.
+We used both metric-based and human-subject evaluations to evaluate our model. Since we got the original summaries in the datasets, we can subjectively judge whether machine-generated generalization results outperform humans.  Besides, the performance of various text summarization methods was reported on shared DUC datasets using an automatic evaluation framework, ROUGE~\cite{lin-2004-rouge}, which is DUC’s official evaluation metric for text summarization. Our experiments were based on the calculation of ROUGE sore in mutiple datasets.
 
 \begin{figure}[h]
 \centering
@@ -193,8 +193,8 @@ We will use both metric-based and human-subject evaluations to evaluate our mode
 \caption{summarization results}
 \label{fig:Results}
 \end{figure}
-The ROUGE score has many metrics, The ROUGE-1, ROUGE-2, ROUGE-l are the most widely used. ROUGE-1 Precision and Recall compare the similarity of uni-grams between reference and candidate summaries.ROUGE-2 Precision and Recall compare the similarity of bi-grams between reference and candidate summaries. By bi-grams, we mean each token of comparison is 2 consecutive words from the reference and candidate summaries. ROUGE-L Precision and Recall measures the Longest Common Subsequence (LCS) words between reference and candidate summaries. By LCS, we refer to word tokens that are in sequence, but not necessarily consecutive. \\
-Figure\ref{fig:Results} shows the results of our model on the Amazon review datasets. We apply rouge evaluation framework on it. First, we import python package ROUGE to our project, then convert the result format. The framework will get the average of scores for each pair of sentence. In this way, we get to do quantitative analysis of the performance of text summarization models.
+The ROUGE score has many metrics, The ROUGE-1, ROUGE-2, and ROUGE-l are the most widely used. ROUGE-1 Precision and Recall compare the similarity of uni-grams between reference and candidate summaries. ROUGE-2 Precision and Recall compare the similarity of bi-grams between reference and candidate summaries. By bi-grams, we mean each token of comparison is 2 consecutive words from the reference and candidate summaries. ROUGE-L Precision and Recall measures the Longest Common Subsequence (LCS) words between reference and candidate summaries. By LCS, we refer to word tokens that are in sequence, but not necessarily consecutive. \\
+Figure\ref{fig:Results} shows the results of our model on the Amazon review datasets. We applied a rouge evaluation framework to it. First, we imported the python package ROUGE to our project, then convert the result format. The framework will get the average scores for each pair of the sentence. In this way, we performed a quantitative analysis of the performance of text summarization models.
 \subsection{Comparative Experiment}
 \begin{table}
 \centering
@@ -209,9 +209,9 @@ Figure\ref{fig:Results} shows the results of our model on the Amazon review data
 \bottomrule
 \end{tabular}
 \end{table}
-We design comparative experiment on 4 different methods, and record the averge ROUGE score on the test dataset. The consequence is listed in Table~\ref{tab:Results}. Experiment result shows the method GRU+Luong Attention+Pre-trained embedding achieve the best performance with the highest F1 score 0.274. Although the score is not high, it shows that this model has the ability to supplement the key information of the text. 
+We designed a comparative experiment on 4 different methods, and record the average ROUGE score on the test dataset. The consequence is listed in Table~\ref{tab:Results}. The experiment result shows the method GRU+Luong Attention+Pre-trained embedding achieves the best performance with the highest F1 score of 0.274. Although the score is not high, it shows that this model has the ability to supplement the key information of the text. 
 \subsection{Conclusion}
-This paper presents a RNN-based model for abstractive summarization tasks. We implement the Seq2seq structure with attention via network model in pytorch. The proposed model is able to output summaries sequence of indeterminate length. We design comparative experiment and the result suggest that GRU+Luong Attention+Pre-trained embedding is our proposed method on this Food review summarization task. 
+This paper presents an RNN-based model for abstractive summarization tasks. We implement the Seq2seq structure with attention via the network model in pytorch. The proposed model is able to output summaries sequences of indeterminate length. We designed a comparative experiment and the result suggest that GRU+Luong Attention+Pre-trained embedding is our proposed method for this Food review summarization task. 
 
 \bibliographystyle{IEEEtran}
 \bibliography{references.bib}
